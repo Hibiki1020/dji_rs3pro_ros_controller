@@ -17,17 +17,17 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
 )
 
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES dji_rs3pro_ros_controller
-   CATKIN_DEPENDS cv_bridge image_transport message_generation nav_msgs nav_msgs roscpp rospy sensor_msgs socketcan_bridge std_msgs tf tf2
-#  DEPENDS system_lib
-)
-
 add_service_files(DIRECTORY srv
   FILES
   SendJointPos.srv
   SendJointSpeed.srv
+)
+
+catkin_package(
+#  INCLUDE_DIRS include
+#  LIBRARIES dji_rs3pro_ros_controller
+  CATKIN_DEPENDS cv_bridge image_transport message_generation nav_msgs nav_msgs roscpp rospy sensor_msgs socketcan_bridge std_msgs tf tf2
+#  DEPENDS system_lib
 )
 
 include_directories(
