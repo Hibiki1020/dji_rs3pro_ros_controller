@@ -70,9 +70,8 @@ class GimbalController(object):
                               "gimbal_base",
                               "end_effector")
 
-    def parse_push_response(self, data_frame):
-        # Function to display various gimbal parameters
-        print("Catch push response")
+    
+
 
     def can_callback(self, data):
         if data.id == self.recv_id:
@@ -129,9 +128,145 @@ class GimbalController(object):
         # Set the gimbal hyperparameters
         print("set_hyperparams")
 
+        return_code = int(0.0, base=8)
+        limit_pitch_max = int(30.0, base=8)
+        limit_pitch_min = int(0.0, base=8)
+        limit_yaw_max = int(30.0, base=8)
+        limit_yaw_min = int(0.0, base=8)
+        limit_roll_max = int(30.0, base=8)
+        limit_roll_min = int(0.0, base=8)
+
+        # 1byte -> B 2byte -> H 4byte -> I
+        hex_data = struct.pack('<7B', return_code, limit_pitch_max, limit_pitch_min, limit_yaw_max, limit_yaw_min, limit_roll_max, limit_roll_min)
+        # To convert like 00 22 11
+        pack_data = ['{:02X}'.format(struct.unpack('<1B', i)[0]) for i in hex_data]
+
+        cmd_data = ':'.join(pack_data)
+        # print(cmd_data)
+        cmd = self.assemble_can_msg(cmd_type='03', cmd_set='0E',
+                                    cmd_id='03', data=cmd_data)
+        
+        self.send_cmd(cmd)
+        return True
+
+    def assemble_can_msg(self, cmd_type, cmd_set, cmd_id, data):
+        if data == "":
+            can_frame_data = "{prefix}" + \
+                ":{cmd_set}:{cmd_id}".format(
+                    cmd_set=cmd_set, cmd_id=cmd_id)
+        else:
+            can_frame_data = "{prefix}" + ":{cmd_set}:{cmd_id}:{data}".format(
+                cmd_set=cmd_set, cmd_id=cmd_id, data=data)
+
+        cmd_length = len(can_frame_data.split(":")) + 15
+
+        seqnum = self.seq_num()
+        # ic(seqnum)
+        can_frame_header = "{header:02x}".format(
+            header=self.header)  # SOF byte
+        can_frame_header += ":" + \
+            ("%04x" % (cmd_length))[2:4]  # 1st length byte
+        can_frame_header += ":" + \
+            ("%04x" % (cmd_length))[0:2]  # 2nd length byte
+        can_frame_header += ":" + \
+            "{cmd_type}".format(cmd_type=cmd_type)  # Command Type
+        can_frame_header += ":" + "{enc:02x}".format(enc=self.enc)  # Encoding
+        can_frame_header += ":" + \
+            "{res1:02x}".format(res1=self.res1)  # Reserved 1
+        can_frame_header += ":" + \
+            "{res2:02x}".format(res2=self.res2)  # Reserved 2
+        can_frame_header += ":" + \
+            "{res3:02x}".format(res3=self.res3)  # Reserved 3
+        can_frame_header += ":" + seqnum    # Sequence number
+        can_frame_header += ":" + calc_crc16(can_frame_header)
+
+        # hex_seq = [eval("0x" + hex_num) for hex_num in can_frame_header.split(":")]
+
+        whole_can_frame = can_frame_data.format(prefix=can_frame_header)
+        whole_can_frame += ":" + calc_crc32(whole_can_frame)
+        whole_can_frame = whole_can_frame.upper()
+        #
+        # print("Header: ", can_frame_header)
+        # print("Total: ", whole_can_frame)
+        return whole_can_frame
+
+    def send_cmd(self, cmd):
+        data = [int(i, 16) for i in cmd.split(":")]
+        # print(data)
+        self.send_data(self.send_id, data)
+
+    def send_data(self, can_id, data):
+        data_len = len(data)
+        full_frame_num, left_len = divmod(data_len, self.FRAME_LEN)
+
+        if left_len == 0:
+            frame_num = full_frame_num
+        else:
+            frame_num = full_frame_num + 1
+
+        # send_buf = (VCI_CAN_OBJ * (frame_num))()
+
+        # msg = Frame()
+        # msg.id = 0  # uint32
+        # msg.is_rtr = False  # bool
+        # msg.is_extended = False  # bool
+        # msg.is_error = False  # bool
+        # msg.dlc = 8  # uint8
+        # msg.data = [0, 0, 0, 0, 0, 0, 0, 0]  # uint8[8]
+        send_msg_buffer = []
+
+        data_offset = 0
+        for i in range(full_frame_num):
+            msg = Frame()
+            msg.id = can_id
+            msg.is_rtr = False
+            msg.is_extended = False
+            msg.is_error = False
+            msg.dlc = 8
+            msg.data = [0, 0, 0, 0, 0, 0, 0, 0]
+
+            for j in range(self.FRAME_LEN):
+                msg.data[j] = data[data_offset + j]
+            data_offset += self.FRAME_LEN
+            send_msg_buffer.append(msg)
+
+        # If there is data left over, the last frame isn't 8byte long
+
+        if left_len > 0:
+            msg = Frame()
+            msg.id = can_id
+            msg.is_rtr = False
+            msg.is_extended = False
+            msg.is_error = False
+            msg.dlc = left_len
+            msg.data = [0, 0, 0, 0, 0, 0, 0, 0]
+
+            for j in range(left_len):
+                msg.data[j] = data[data_offset + j]
+            data_offset += self.FRAME_LEN
+            send_msg_buffer.append(msg)
+
+        # print(send_msg_buffer)
+        for msg in send_msg_buffer:
+            self.pub_can_command.publish(msg)
+
+    def request_current_position(self):
+        hex_data = [0x01]
+        pack_data = ['{:02X}'.format(i)
+                     for i in hex_data]
+        cmd_data = ':'.join(pack_data)
+        cmd = self.assemble_can_msg(cmd_type='03', cmd_set='0E',
+                                    cmd_id='02', data=cmd_data)
+        # print(cmd)
+        # print("Cmd_data" + cmd)
+        self.send_cmd(cmd)
+
+    def print_current_position(self):
+        print("Current position: yaw: {yaw}, pitch: {pitch}, roll: {roll}".format(self.yaw, self.pitch, self.roll))
+
     def ros_init(self):
         rospy.init_node('RS3Pro_Gimbal_Controller', anonymous=True)
-        rate = rospy.Rate(10) # 10hz
+        self.rate = rospy.Rate(10) # 10hz
         self.br = tf.TransformBroadcaster()
 
         self.sub_can_data = rospy.Subscriber('/gimbal_data', Frame, self.can_callback)
@@ -144,11 +279,21 @@ class GimbalController(object):
 
         self.set_hyperparams()
 
+    def ros_spin(self):
+
+        while not rospy.is_shutdown():
+            self.request_current_position()
+            self.print_current_position()
+            self.rate.sleep()
+            rospy.spin()
+
+
 
 
 if __name__ == "__main__":
     try:
         rosnode = GimbalController()
         rosnode.ros_init()
+        rosnode.ros_spin()
     except rospy.ROSInterruptException:
         pass
