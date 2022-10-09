@@ -21,6 +21,12 @@ add_service_files(DIRECTORY srv
   FILES
   SendJointPos.srv
   SendJointSpeed.srv
+  AddTwolnts.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
 )
 
 catkin_package(
@@ -34,6 +40,8 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
 )
+
+
 
 catkin_install_python(PROGRAMS
   scripts/can_bus_controller.py

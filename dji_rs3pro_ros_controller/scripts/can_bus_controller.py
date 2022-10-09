@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import struct
 from ctypes import *
 import numpy as np
@@ -9,9 +9,15 @@ import tf
 from std_msgs.msg import String
 from sensor_msgs.msg import JointState
 from can_msgs.msg import Frame
+import sys
+import os
+
+#Need in running in ROS
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append('../')
+from scripts.check_sum import *
 from dji_rs3pro_ros_controller.srv import *
 
-from check_sum import *
 
 class GimbalController(object):
     def __init__(self):
@@ -102,6 +108,14 @@ class GimbalController(object):
                     if request_data == "0E:08":
                         self.parse_push_response(hex_data)
 
+    def seq_num(self):
+        if self.seq >= 0xFFFD:
+            self.seq = 0x0002
+        self.seq += 1
+        # Seq_Init_Data = 0x1122
+        seq_str = "%04x" % self.seq
+        return seq_str[2:] + ":" + seq_str[0:2]
+
     def send_joint_pos(self, req):
         # print("Returning [%s + %s +%s ]" % (req.pitch, req.yaw, req.roll))
 
@@ -128,21 +142,30 @@ class GimbalController(object):
         # Set the gimbal hyperparameters
         print("set_hyperparams")
 
-        return_code = int(0.0, base=8)
-        limit_pitch_max = int(30.0, base=8)
-        limit_pitch_min = int(0.0, base=8)
-        limit_yaw_max = int(30.0, base=8)
-        limit_yaw_min = int(0.0, base=8)
-        limit_roll_max = int(30.0, base=8)
-        limit_roll_min = int(0.0, base=8)
+        return_code = int(str(0), base=10)
+        limit_pitch_max = int(str(30), base=10)
+        limit_pitch_min = int(str(0), base=10)
+        limit_yaw_max = int(str(0), base=10)
+        limit_yaw_min = int(str(0), base=10)
+        limit_roll_max = int(str(30), base=10)
+        limit_roll_min = int(str(0), base=10)
 
-        # 1byte -> B 2byte -> H 4byte -> I
+        #print("yaw: {yaw}, yaw_type: {yaw_type}".format(yaw=limit_yaw_max, yaw_type=type(limit_yaw_max)))
+
+        # 1byte -> B 2byte -> H 4byte -> I, LSBファーストのため、リトルエンディアン<を用いる
         hex_data = struct.pack('<7B', return_code, limit_pitch_max, limit_pitch_min, limit_yaw_max, limit_yaw_min, limit_roll_max, limit_roll_min)
+        
+        # Python2環境下で動作していたプログラム
         # To convert like 00 22 11
-        pack_data = ['{:02X}'.format(struct.unpack('<1B', i)[0]) for i in hex_data]
+        #pack_data = ['{:02X}'.format(struct.unpack('<1B', bytes(i))[0]) for i in hex_data]
 
-        cmd_data = ':'.join(pack_data)
-        # print(cmd_data)
+        # Python3環境下ではこれを動かす
+        pack_data = struct.unpack('<7B', hex_data)
+        tmp_data = []
+        for i in pack_data:
+            tmp_data.append(str(i))
+        cmd_data = ':'.join(tmp_data)
+        #print(cmd_data)
         cmd = self.assemble_can_msg(cmd_type='03', cmd_set='0E',
                                     cmd_id='03', data=cmd_data)
         
@@ -196,6 +219,7 @@ class GimbalController(object):
         self.send_data(self.send_id, data)
 
     def send_data(self, can_id, data):
+        print(data)
         data_len = len(data)
         full_frame_num, left_len = divmod(data_len, self.FRAME_LEN)
 
@@ -247,6 +271,8 @@ class GimbalController(object):
             send_msg_buffer.append(msg)
 
         # print(send_msg_buffer)
+        #print("Send message")
+        #print(send_msg_buffer)
         for msg in send_msg_buffer:
             self.pub_can_command.publish(msg)
 
@@ -262,7 +288,7 @@ class GimbalController(object):
         self.send_cmd(cmd)
 
     def print_current_position(self):
-        print("Current position: yaw: {yaw}, pitch: {pitch}, roll: {roll}".format(self.yaw, self.pitch, self.roll))
+        print("Current position: yaw: {yaw}, pitch: {pitch}, roll: {roll}".format(yaw=self.yaw, pitch=self.pitch, roll=self.roll))
 
     def ros_init(self):
         rospy.init_node('RS3Pro_Gimbal_Controller', anonymous=True)
