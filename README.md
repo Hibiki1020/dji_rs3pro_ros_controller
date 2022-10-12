@@ -31,7 +31,7 @@ sudo ip link set up slcan0
 For the SLCANUINO bring up the can interface using:
 ```bash
 sudo slcan_attach -f -s6 -o /dev/ttyUSB0
-sudo slcand -S **1000000** ttyUSB0 can0
+sudo slcand -S 1000000 ttyUSB0 can0
 sudo ifconfig can0 up
 ```
 
