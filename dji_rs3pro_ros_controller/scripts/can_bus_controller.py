@@ -28,14 +28,17 @@ class GimbalController(object):
         self.res3 = 0x00
         self.seq = 0x0002
 
-        self.send_id = int("223", 16)
-        self.recv_id = int("222", 16)
+        self.send_id = int("223", 16) #547
+        self.recv_id = int("222", 16) #546
 
         self.FRAME_LEN = 8
 
         self.can_recv_msg_buffer = []
         self.can_recv_msg_len_buffer = []
-        self.can_recv_buffer_len = 10
+        self.can_recv_buffer_len = 16
+
+        self.total_byte_data = []
+        self.send_byte_data = []
 
         self.roll = 0.0
         self.pitch = 0.0
@@ -62,7 +65,7 @@ class GimbalController(object):
         output = "Pitch: " + \
             str(self.pitch) + ", Yaw: " + \
             str(self.yaw) + ", Roll: " + str(self.roll)
-        # print(output)
+        print(output)
         self.br.sendTransform((0.0, 0.0, -1.0),
                               tf.transformations.quaternion_from_euler(
             0.0, 0.0, 0.0),
@@ -80,13 +83,41 @@ class GimbalController(object):
 
 
     def can_callback(self, data):
+        # print("can_callback")
         if data.id == self.recv_id:
-            # print(len(data.data))
-            # print(data)
-            str_data = ['{:02X}'.format(struct.unpack('<1B', i)[
-                                        0]) for i in data.data]
-            # print(str_data)
-            self.can_recv_msg_buffer.append(str_data)
+            print("can_callback")
+            #print("Data:")
+            #print(data)
+            #print(data.data)
+            #print(len(data.data))
+            #print('{:02X}'.format(data.data[1]))
+
+
+            tmp_byte_data = []
+
+            for i in data.data:
+                tmp_data = '{:02X}'.format(i)
+                #print(tmp_data)
+                tmp_byte_data.append(tmp_data)
+            
+            # if tmp_byte_data[0] == 'AA':
+            #     print("SOF")
+            #     self.send_byte_data = self.total_byte_data.copy()
+            #     self.total_byte_data.clear()
+            #     self.total_byte_data.extend(tmp_byte_data)
+            #     #print(self.total_byte_data)
+            #     #print(self.send_byte_data)
+            # else:
+            #     self.total_byte_data.extend(tmp_byte_data)
+            #     #print(self.total_byte_data)
+                    
+
+            str_data = ['{:02X}'.format(struct.unpack('<1B', b'i')[0]) for i in data.data]
+            
+            # #print(str_data)
+            # #print(len(str_data))
+
+            self.can_recv_msg_buffer.append(tmp_byte_data)
             self.can_recv_msg_len_buffer.append(data.dlc)
 
             if len(self.can_recv_msg_buffer) > self.can_recv_buffer_len:
@@ -96,17 +127,60 @@ class GimbalController(object):
 
             full_msg_frames = self.can_buffer_to_full_frame()
 
-            # print(full_msg_frames)
+            #print(full_msg_frames)
+            #for i in full_msg_frames:
+            #    print(i)
+            
+            
             for hex_data in full_msg_frames:
+                #print(hex_data)
+                #print(type(hex_data))
                 if self.validate_api_call(hex_data):
+                    #print("Validating api call")
                     # ic(':'.join(hex_data[16:-4]))
                     request_data = ":".join(hex_data[12:14])
                     # print("Req: " + str(request_data))
                     if request_data == "0E:02":
                         # This is response data to a get position request
+                        #print("Position Response")
                         self.parse_position_response(hex_data)
                     if request_data == "0E:08":
                         self.parse_push_response(hex_data)
+
+    def can_buffer_to_full_frame(self):
+        full_msg_frames = []
+        full_frame_counter = 0
+        for i in range(len(self.can_recv_msg_buffer)):
+            msg = self.can_recv_msg_buffer[i]
+            length = self.can_recv_msg_len_buffer[i]
+            msg = msg[:length]
+            cmd_data = ':'.join(msg)
+            # print("len: " + str(length) + " - " +
+            #       str(msg) + " -> " + cmd_data)
+            if msg[0] == "AA":
+                full_msg_frames.append(msg)
+                full_frame_counter += 1
+            if msg[0] != "AA" and (full_frame_counter > 0):
+                # full_msg_frames[-1] += ":"
+                for byte in msg:
+                    full_msg_frames[-1].append(byte)
+        return full_msg_frames
+
+    def validate_api_call(self, data_frame):
+        validated = False
+        check_sum = ':'.join(data_frame[-4:])
+        data = ':'.join(data_frame[:-4])
+        # # print(len(hex_data))
+        #print(data)
+        #print(type(data[0]))
+        if len(data_frame) >= 8:
+            if check_sum == calc_crc32(data):
+                #         # print("Approved Message: " + str(hex_data))
+                header = ':'.join(data_frame[:10])
+                header_check_sum = ':'.join(data_frame[10:12])
+                if header_check_sum == calc_crc16(header):
+                    validated = True
+        return validated
 
     def seq_num(self):
         if self.seq >= 0xFFFD:
@@ -160,11 +234,8 @@ class GimbalController(object):
         #pack_data = ['{:02X}'.format(struct.unpack('<1B', bytes(i))[0]) for i in hex_data]
 
         # Python3環境下ではこれを動かす
-        pack_data = struct.unpack('<7B', hex_data)
-        tmp_data = []
-        for i in pack_data:
-            tmp_data.append(str(i))
-        cmd_data = ':'.join(tmp_data)
+        pack_data = ['{:02X}'.format(struct.unpack('<1B', b'i')[0]) for i in hex_data]
+        cmd_data = ':'.join(pack_data)
         #print(cmd_data)
         cmd = self.assemble_can_msg(cmd_type='03', cmd_set='0E',
                                     cmd_id='03', data=cmd_data)
@@ -219,7 +290,7 @@ class GimbalController(object):
         self.send_data(self.send_id, data)
 
     def send_data(self, can_id, data):
-        print(data)
+        #print(data)
         data_len = len(data)
         full_frame_num, left_len = divmod(data_len, self.FRAME_LEN)
 
@@ -295,8 +366,8 @@ class GimbalController(object):
         self.rate = rospy.Rate(10) # 10hz
         self.br = tf.TransformBroadcaster()
 
-        self.sub_can_data = rospy.Subscriber('/gimbal_data', Frame, self.can_callback)
-        self.pub_can_command = rospy.Publisher('/sent_messages', Frame, queue_size=10)
+        self.sub_can_data = rospy.Subscriber('received_messages', Frame, self.can_callback)
+        self.pub_can_command = rospy.Publisher('sent_messages', Frame, queue_size=10)
 
         self.service_set_angle = rospy.Service(
             'send_joint_cmd', SendJointPos, self.send_joint_pos)
@@ -308,10 +379,12 @@ class GimbalController(object):
     def ros_spin(self):
 
         while not rospy.is_shutdown():
+            #print("ROS spin")
             self.request_current_position()
             self.print_current_position()
             self.rate.sleep()
-            rospy.spin()
+        
+
 
 
 
