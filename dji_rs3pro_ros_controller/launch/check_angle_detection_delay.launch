@@ -1,0 +1,16 @@
+<launch>
+  <!--For Get Gimbal Angle-->
+  <node pkg="dji_rs3pro_ros_controller" name="dji_rs3pro_ros_controller" type="can_bus_controller.py" output="screen">
+  </node>
+  <node pkg="socketcan_bridge" name="socketcan_bridge" type="socketcan_bridge_node" output="screen">
+    <param name="can_device" value="slcan0" />
+  </node>
+
+<!--For Check Angle Detection Delay-->
+<node pkg="dji_rs3pro_ros_controller" name="check_angle_detection_delay" type="check_angle_detection_delay.py" output="screen">
+</node>
+<node pkg="tf2_ros" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 1.5708 -1.5708 imu_link end_effector" />
+
+
+
+</launch>

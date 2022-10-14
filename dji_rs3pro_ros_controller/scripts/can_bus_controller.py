@@ -17,6 +17,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append('../')
 from scripts.check_sum import *
 from dji_rs3pro_ros_controller.srv import *
+from dji_rs3pro_ros_controller.msg import *
 
 
 class GimbalController(object):
@@ -65,7 +66,7 @@ class GimbalController(object):
         output = "Pitch: " + \
             str(self.pitch) + ", Yaw: " + \
             str(self.yaw) + ", Roll: " + str(self.roll)
-        print(output)
+        #print(output)
         self.br.sendTransform((0.0, 0.0, -1.0),
                               tf.transformations.quaternion_from_euler(
             0.0, 0.0, 0.0),
@@ -85,7 +86,7 @@ class GimbalController(object):
     def can_callback(self, data):
         # print("can_callback")
         if data.id == self.recv_id:
-            print("can_callback")
+            #print("can_callback")
             #print("Data:")
             #print(data)
             #print(data.data)
@@ -127,7 +128,7 @@ class GimbalController(object):
 
             full_msg_frames = self.can_buffer_to_full_frame()
 
-            #print(full_msg_frames)
+            # print(full_msg_frames)
             #for i in full_msg_frames:
             #    print(i)
             
@@ -359,7 +360,14 @@ class GimbalController(object):
         self.send_cmd(cmd)
 
     def print_current_position(self):
-        print("Current position: yaw: {yaw}, pitch: {pitch}, roll: {roll}".format(yaw=self.yaw, pitch=self.pitch, roll=self.roll))
+        #print("Current position: yaw: {yaw}, pitch: {pitch}, roll: {roll}".format(yaw=self.yaw, pitch=self.pitch, roll=self.roll))
+        pub_angle = EularAngle()
+        pub_angle.header.stamp = rospy.Time.now()
+        pub_angle.header.frame_id = "end_effector"
+        pub_angle.yaw = self.yaw
+        pub_angle.pitch = self.pitch
+        pub_angle.roll = self.roll
+        self.pub_eular_angle.publish(pub_angle)
 
     def ros_init(self):
         rospy.init_node('RS3Pro_Gimbal_Controller', anonymous=True)
@@ -373,6 +381,8 @@ class GimbalController(object):
             'send_joint_cmd', SendJointPos, self.send_joint_pos)
         self.service_set_velocity = rospy.Service(
             'send_joint_speed_cmd', SendJointSpeed, self.send_joint_speed_cmd)
+
+        self.pub_eular_angle = rospy.Publisher('gimbal_angle', EularAngle, queue_size=10)
 
         self.set_hyperparams()
 
