@@ -2,6 +2,7 @@
 import struct
 from ctypes import *
 import numpy as np
+import math
 
 import rospy
 import tf
@@ -371,7 +372,7 @@ class GimbalController(object):
 
     def ros_init(self):
         rospy.init_node('RS3Pro_Gimbal_Controller', anonymous=True)
-        self.rate = rospy.Rate(10) # 10hz
+        self.rate = rospy.Rate(200) # 200hz
         self.br = tf.TransformBroadcaster()
 
         self.sub_can_data = rospy.Subscriber('received_messages', Frame, self.can_callback)

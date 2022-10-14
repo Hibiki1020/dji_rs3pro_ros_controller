@@ -52,7 +52,7 @@ class CheckAngleDetectionDelay(object):
         #print(pose_trans)
 
         roll, pitch, yaw = self.euler_from_quaternion(pose_trans.pose.orientation.x, pose_trans.pose.orientation.y, pose_trans.pose.orientation.z, pose_trans.pose.orientation.w)
-        self.imu_angle.roll = yaw + 180.0
+        self.imu_angle.roll = yaw + math.pi
         self.imu_angle.pitch = -1.0* roll
         self.imu_angle.yaw = pitch
         #print("imu_angle:", self.imu_angle)
@@ -82,26 +82,30 @@ class CheckAngleDetectionDelay(object):
 
     def gimbal_angle_callback(self, msg):
         self.gimbal_angle = msg
-        self.gimbal_angle.roll = self.gimbal_angle.roll/math.pi*180.0
-        self.gimbal_angle.pitch = self.gimbal_angle.pitch/math.pi*180.0
-        self.gimbal_angle.yaw = self.gimbal_angle.yaw/math.pi*180.0
+        self.gimbal_angle.roll = self.gimbal_angle.roll
+        self.gimbal_angle.pitch = self.gimbal_angle.pitch
+        self.gimbal_angle.yaw = self.gimbal_angle.yaw
 
         self.last_time = self.now_time
         self.now_time = rospy.get_time()
         dt = self.now_time - self.last_time
 
-        print("Delta Time: ",dt)
-        print("gimbal_angle roll: {:4f}, pitch: {:4f}, yaw: {:4f}".format(self.gimbal_angle.roll, self.gimbal_angle.pitch, self.gimbal_angle.yaw))
-        print("imu_angle roll   : {:4f}, pitch: {:4f}, yaw: {:4f}".format(self.imu_angle.roll, self.imu_angle.pitch, self.imu_angle.yaw))
-        print("\n\n")
+        # print("Delta Time: ",dt)
+        # print("gimbal_angle roll: {:4f}, pitch: {:4f}, yaw: {:4f}".format(self.gimbal_angle.roll, self.gimbal_angle.pitch, self.gimbal_angle.yaw))
+        # print("imu_angle roll   : {:4f}, pitch: {:4f}, yaw: {:4f}".format(self.imu_angle.roll, self.imu_angle.pitch, self.imu_angle.yaw))
+        # print("\n\n")
+
+        self.imu_angle.header.stamp = rospy.Time.now()
+        self.pub_imu_angle.publish(self.imu_angle)
 
     def ros_init(self):
         rospy.init_node('check_angle_detection_delay', anonymous=True)
-        self.rate = rospy.Rate(10)
+        self.rate = rospy.Rate(200)
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
         self.sub_imu_data = rospy.Subscriber("/imu/data", Imu, self.imu_data_callback)
         self.sub_gimbal_angle = rospy.Subscriber("gimbal_angle", EularAngle, self.gimbal_angle_callback)
+        self.pub_imu_angle = rospy.Publisher("imu_angle", EularAngle, queue_size=1)
 
     def ros_spin(self):
         while not rospy.is_shutdown():
