@@ -7,3 +7,6 @@ pitch_max: 30.0
 pitch_min: -30.0
 yaw_max: 15.0
 yaw_min: -15.0
+
+angular_velocity_threshold: 4.0 # deg/sec
+target_angle_threshold: 0.2

@@ -91,7 +91,11 @@ class GimbalController(GimbalBase):
         self.yaw_max = float(CFG["yaw_max"])
         self.yaw_min = float(CFG["yaw_min"])
 
+        self.angular_velocity_threshold = float(CFG["angular_velocity_threshold"])
+        self.target_angle_threshold = float(CFG["target_angle_threshold"])
+
         self.imu_angle = EularAngle()
+        self.target_angle = EularAngle()
         self.img_data = Image()
 
     def img_data_callback(self, msg):
@@ -145,9 +149,27 @@ class GimbalController(GimbalBase):
         self.sub_imu_data = rospy.Subscriber("/imu/data", Imu, self.imu_data_callback)
         self.sub_img_data = rospy.Subscriber("/camera/image_raw", Image, self.img_data_callback)
 
+    def reach_target_angle(self):
+        checker = False
+        if abs(self.target_angle.roll - self.roll) < self.target_angle_threshold and abs(self.target_angle.pitch - self.pitch) < self.target_angle_threshold and abs(self.target_angle.yaw - self.yaw) < self.target_angle_threshold:
+            checker = True
+        else:
+            checker = False
+
+        return checker
+
+    def request_target_position(self):
+        print("Set New Target Angle")
+
     def controller_spin(self):
+        rospy.spin()
+        counter = 0
         while not rospy.is_shutdown():
             self.request_current_position()
+            if self.reach_target_angle() or counter == 0:
+                self.request_target_position()
+            
+            counter += 1
             self.rate.sleep()
 
 
