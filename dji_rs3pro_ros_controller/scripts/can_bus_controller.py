@@ -21,7 +21,7 @@ from dji_rs3pro_ros_controller.srv import *
 from dji_rs3pro_ros_controller.msg import *
 
 
-class GimbalController(object):
+class GimbalBase(object):
     def __init__(self):
         self.header = 0xAA
         self.enc = 0x00
@@ -38,9 +38,6 @@ class GimbalController(object):
         self.can_recv_msg_buffer = []
         self.can_recv_msg_len_buffer = []
         self.can_recv_buffer_len = 16
-
-        self.total_byte_data = []
-        self.send_byte_data = []
 
         self.roll = 0.0
         self.pitch = 0.0
@@ -80,9 +77,6 @@ class GimbalController(object):
                               rospy.Time.now(),
                               "gimbal_base",
                               "end_effector")
-
-    
-
 
     def can_callback(self, data):
         # print("can_callback")
@@ -371,7 +365,9 @@ class GimbalController(object):
         self.pub_eular_angle.publish(pub_angle)
 
     def ros_init(self):
-        rospy.init_node('RS3Pro_Gimbal_Controller', anonymous=True)
+        rospy.init_node('RS3Pro_Gimbal_Base', anonymous=True)
+    
+    def set_param(self):
         self.rate = rospy.Rate(200) # 200hz
         self.br = tf.TransformBroadcaster()
 
@@ -402,8 +398,9 @@ class GimbalController(object):
 
 if __name__ == "__main__":
     try:
-        rosnode = GimbalController()
+        rosnode = GimbalBase()
         rosnode.ros_init()
+        rosnode.set_param()
         rosnode.ros_spin()
     except rospy.ROSInterruptException:
         pass
