@@ -31,8 +31,6 @@ At a minimum, the following programs are required to run this program.
 * Home-made Cable
 * PC(Ubuntu 20.04)
 
-note: When a light object such as a webcam is mounted on a gimbal, excessive torque or angular velocity may be applied to the gimbal, possibly damaging the main unit. Therefore, it is advisable to create a balance weight or the like to secure a certain amount of weight. In my case, I use an aluminum weight weighing about 700 grams.
-
 ### DJI Focus Wheel
 This equipment is always required to connect the gimbal to the PC. A switch exists on the focus wheel to switch between CAN and S-BUS, but this time, **switch to CAN**.
 
@@ -61,7 +59,9 @@ catkin build (or catkin_make)
 ```
 
 ### Camera
+I used a Realsense D435 as my camera. I also used aluminum weights for IMU mounting and to ensure weight balance.
 
+**note**: When a light object such as a webcam is mounted on a gimbal, excessive torque or angular velocity may be applied to the gimbal, possibly damaging the main unit. Therefore, it is advisable to create a balance weight or the like to secure a certain amount of weight. In my case, I use an aluminum weight weighing about 700 grams.
 
 ## Run
 For the CANusb bring up the can interface using. 
