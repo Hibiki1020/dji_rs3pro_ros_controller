@@ -1,12 +1,14 @@
 record_data: False
 record_data_path: /media/amsl/96fde31e-3b9b-4160-8d8a-a4b913579ca21/aaaaa/
 
-roll_max: 30.0
-roll_min: -30.0
-pitch_max: 30.0
-pitch_min: -30.0
-yaw_max: 15.0
-yaw_min: -15.0
+print_status: True
+
+roll_max: 10.0
+roll_min: -10.0
+pitch_max: 10.0
+pitch_min: -10.0
+yaw_max: 5.0
+yaw_min: -5.0
 
 angular_velocity_threshold: 4.0 # deg/sec
 target_angle_threshold: 0.2

@@ -5,6 +5,7 @@ import numpy as np
 import math
 import argparse
 import yaml
+import random
 
 import rospy
 import tf
@@ -30,60 +31,49 @@ from dji_rs3pro_ros_controller.srv import *
 from dji_rs3pro_ros_controller.msg import *
 
 class GimbalController(GimbalBase):
-    def __init__(self, 
-        header, 
-        enc, 
-        res1,
-        res2,
-        res3, 
-        seq, 
-        send_id, 
-        recv_id, 
-        FRAME_LEN,
-        can_recv_msg_buffer,
-        can_recv_msg_len_buffer,
-        can_recv_msg_buffer_len,
-        total_byte_data,
-        roll, pitch, yaw,
-        CFG):
+    def __init__(self, CFG):
+        super().__init__()
 
-        super.__init__(self, 
-        header, 
-        enc, 
-        res1,
-        res2,
-        res3, 
-        seq, 
-        send_id, 
-        recv_id, 
-        FRAME_LEN,
-        can_recv_msg_buffer,
-        can_recv_msg_len_buffer,
-        can_recv_msg_buffer_len,
-        total_byte_data,
-        roll, pitch, yaw)
+        print(self.roll)
 
-        self.header = header
-        self.enc = enc
-        self.res1 = res1
-        self.res2 = res2
-        self.res3 = res3
-        self.seq = seq
-        self.send_id = send_id
-        self.recv_id = recv_id
-        self.FRAME_LEN = FRAME_LEN
-        self.can_recv_msg_buffer = can_recv_msg_buffer
-        self.can_recv_msg_len_buffer = can_recv_msg_len_buffer
-        self.can_recv_msg_buffer_len = can_recv_msg_buffer_len
-        self.total_byte_data = total_byte_data
+        # super.__init__(self, 
+        # header, 
+        # enc, 
+        # res1,
+        # res2,
+        # res3, 
+        # seq, 
+        # send_id, 
+        # recv_id, 
+        # FRAME_LEN,
+        # can_recv_msg_buffer,
+        # can_recv_msg_len_buffer,
+        # can_recv_msg_buffer_len,
+        # total_byte_data,
+        # roll, pitch, yaw)
+
+        # self.header = header
+        # self.enc = enc
+        # self.res1 = res1
+        # self.res2 = res2
+        # self.res3 = res3
+        # self.seq = seq
+        # self.send_id = send_id
+        # self.recv_id = recv_id
+        # self.FRAME_LEN = FRAME_LEN
+        # self.can_recv_msg_buffer = can_recv_msg_buffer
+        # self.can_recv_msg_len_buffer = can_recv_msg_len_buffer
+        # self.can_recv_msg_buffer_len = can_recv_msg_buffer_len
+        # self.total_byte_data = total_byte_data
         
-        self.roll = roll
-        self.pitch = pitch
-        self.yaw = yaw
+        # self.roll = roll
+        # self.pitch = pitch
+        # self.yaw = yaw
 
         self.CFG = CFG
         self.record_data = bool(CFG["record_data"])
         self.record_data_path = str(CFG["record_data_path"])
+        self.print_status_checker = bool(CFG["print_status"])
         self.roll_max = float(CFG["roll_max"])
         self.roll_min = float(CFG["roll_min"])
         self.pitch_max = float(CFG["pitch_max"])
@@ -97,6 +87,10 @@ class GimbalController(GimbalBase):
         self.imu_angle = EularAngle()
         self.target_angle = EularAngle()
         self.img_data = Image()
+
+        self.target_roll = 0.0
+        self.target_pitch = 0.0
+        self.target_yaw = 0.0
 
     def img_data_callback(self, msg):
         self.img_data = msg
@@ -112,6 +106,7 @@ class GimbalController(GimbalBase):
         
         try:
             self.trans = self.tfBuffer.lookup_transform('imu_link', 'end_effector', rospy.Time())
+            #print(type(self.trans))
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             self.rate.sleep()
 
@@ -146,12 +141,24 @@ class GimbalController(GimbalBase):
         rospy.init_node('gimbal_controller', anonymous=True)
 
     def set_param_in_controller(self):
+        self.rate = rospy.Rate(200)
+        self.tfBuffer = tf2_ros.Buffer()
+        self.listener = tf2_ros.TransformListener(self.tfBuffer)
         self.sub_imu_data = rospy.Subscriber("/imu/data", Imu, self.imu_data_callback)
         self.sub_img_data = rospy.Subscriber("/camera/image_raw", Image, self.img_data_callback)
 
+    def print_status(self):
+        print("Current position: yaw: {yaw}, pitch: {pitch}, roll: {roll}".format(yaw=self.yaw, pitch=self.pitch, roll=self.roll))
+
     def reach_target_angle(self):
         checker = False
-        if abs(self.target_angle.roll - self.roll) < self.target_angle_threshold and abs(self.target_angle.pitch - self.pitch) < self.target_angle_threshold and abs(self.target_angle.yaw - self.yaw) < self.target_angle_threshold:
+        tmp_target_roll = self.target_roll/180.0*math.pi
+        tmp_target_pitch = self.target_pitch/180.0*math.pi
+
+        print(self.roll, self.pitch)
+        print(tmp_target_roll, tmp_target_pitch)
+
+        if abs(tmp_target_roll - self.roll) < self.target_angle_threshold and abs(tmp_target_pitch - self.pitch) < self.target_angle_threshold:
             checker = True
         else:
             checker = False
@@ -161,13 +168,58 @@ class GimbalController(GimbalBase):
     def request_target_position(self):
         print("Set New Target Angle")
 
+        correct_target_angle = False
+
+        while correct_target_angle==False:
+
+            self.target_roll = random.uniform(self.roll_min, self.roll_max)
+            self.target_pitch = random.uniform(self.pitch_min, self.pitch_max)
+            self.target_yaw = random.uniform(self.yaw_min, self.yaw_max)
+
+            tmp_current_roll = self.roll /math.pi * 180.0
+            tmp_current_pitch = self.pitch /math.pi * 180.0
+            tmp_current_yaw = self.yaw /math.pi * 180.0
+
+            if(abs(self.target_roll - tmp_current_roll) > self.angular_velocity_threshold or abs(self.target_pitch - tmp_current_pitch) > self.angular_velocity_threshold or abs(self.target_yaw - tmp_current_yaw) > self.angular_velocity_threshold):
+                correct_target_angle = True
+                self.target_yaw = 0.0
+                if self.print_status_checker:
+                    print("Target angle set")
+                    print("Target Angle: yaw: {yaw}, pitch: {pitch}, roll: {roll}".format(yaw=self.target_yaw, pitch=self.target_pitch, roll=self.target_roll))
+
+    def set_attitude_control(self, in_yaw, in_roll, in_pitch):
+        # yaw, roll, pitch in 0.1 steps (-1800,1800)
+        # ctrl_byte always to 1
+        # time_for_action to define speed in 0.1sec
+        yaw = int(in_yaw*10.0)
+        roll = int(in_roll*10.0)
+        pitch = int(in_pitch*10.0)
+
+        ctrl_byte = 0x01
+        time_for_action = 0x14 # 2.0sec
+        hex_data = struct.pack('<3h2B', yaw, roll, pitch,
+                               ctrl_byte, time_for_action)
+
+        pack_data = ['{:02X}'.format(struct.unpack('<1B', b'i')[
+            0]) for i in hex_data]
+        cmd_data = ':'.join(pack_data)
+        # print(cmd_data)
+        cmd = self.assemble_can_msg(cmd_type='03', cmd_set='0E',
+                                    cmd_id='00', data=cmd_data)
+
+        self.send_cmd(cmd)
+        return True
+
     def controller_spin(self):
-        rospy.spin()
         counter = 0
         while not rospy.is_shutdown():
             self.request_current_position()
+            if self.print_status_checker:
+                self.print_status()
+            
             if self.reach_target_angle() or counter == 0:
                 self.request_target_position()
+                self.set_attitude_control(self.target_yaw, self.target_roll, self.target_pitch)
             
             counter += 1
             self.rate.sleep()
@@ -180,7 +232,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--train_cfg', '-c',
         type=str,
-        required=True,
+        required=False,
+        default="../yaml/control_gimbal_angle.yaml",
         help='Training configuration file'
     )
 

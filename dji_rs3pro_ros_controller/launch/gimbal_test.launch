@@ -7,5 +7,4 @@
     <param name="can_device" value="slcan0" />
   </node>
 
-
 </launch>
