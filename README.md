@@ -40,6 +40,9 @@ This equipment is always required to connect the gimbal to the PC. A switch exis
 This time I used [Lawicel's CANUSB](https://www.canusb.com/products/canusb/) as a converter between CAN and USB. Since the USB terminal of this CANUSB is **USB Type B**, a conversion cable to A or C from B is also required.
 
 ### Home-made Cable
+A home-made cable is required for communication between the focus wheel and the CAN-USB converter, using a 9-pin D-sub terminal (jack) on the CAN-USB converter side and a 4-pin Dupont connector on the focus wheel side. Refer to the following image for cable wiring.
+
+![配線図](https://user-images.githubusercontent.com/60866340/195969764-85d6bfec-fcca-443d-b4e3-c9a1a9c93363.png)
 
 ### IMU
 In this method, I used [MTi-30](https://www.xsens.com/products/mti-10-series?utm_term=xsens%20mti30&utm_medium=ppc&utm_campaign=3DCA+%7C+North+Amer+%7C+Search&utm_source=adwords&hsa_cam=15267582124&hsa_src=g&hsa_mt=e&hsa_ver=3&hsa_net=adwords&hsa_tgt=aud-1596292619963:kwd-1000087377016&hsa_acc=1306794700&hsa_grp=132748046794&hsa_kw=xsens%20mti30&hsa_ad=561599686314&gclid=CjwKCAjwkaSaBhA4EiwALBgQaJQrnVGFkerrfFy4r0kFn3oYyCk_727Y4xqZO1D1FVAVU8B11mbE-hoCY3EQAvD_BwE) for compensate gimbal's low frequency.
