@@ -68,7 +68,7 @@ For the CANusb bring up the can interface using.
 
 If the IMU or camera USB is inserted first, the USB number may be USB1 or USB2.:
 ```bash
-sudo slcand -o -s8 -t hw -S 3000000 /dev/ttyUSB0
+sudo slcand -o -s8 -t hw -S 1000000 /dev/ttyUSB0
 sudo ip link set up slcan0
 ```
 When using the CAN-USB converter described in the Hardware Setup section, only the green LED on the converter will light up constantly if communication between the gimbal and the PC is working properly.
