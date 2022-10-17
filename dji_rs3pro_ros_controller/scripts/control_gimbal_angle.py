@@ -268,8 +268,7 @@ class GimbalController(GimbalBase):
             if self.reach_target_angle() or counter == 0:
                 print("Request New Target Angle")
                 self.request_target_position()
-            
-            self.set_attitude_control()
+                self.set_attitude_control()
             
             counter += 1
 

@@ -354,7 +354,7 @@ class GimbalBase(object):
 
         self.pub_eular_angle = rospy.Publisher('gimbal_angle', EularAngle, queue_size=10)
 
-        ##self.set_hyperparams()
+        self.set_hyperparams()
 
     def ros_spin(self):
 
