@@ -141,24 +141,33 @@ class GimbalController(GimbalBase):
         rospy.init_node('gimbal_controller', anonymous=True)
 
     def set_param_in_controller(self):
-        self.rate = rospy.Rate(200)
+        self.rate = rospy.Rate(50)
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
+        
         self.sub_imu_data = rospy.Subscriber("/imu/data", Imu, self.imu_data_callback)
         self.sub_img_data = rospy.Subscriber("/camera/image_raw", Image, self.img_data_callback)
+        
+        #self.service_set_angle = rospy.Service('send_joint_cmd', SendJointPos, self.send_joint_pos)
+        #self.service_set_velocity = rospy.Service('send_joint_speed_cmd', SendJointSpeed, self.send_joint_speed_cmd)
 
     def print_status(self):
-        print("Current position: yaw: {yaw}, pitch: {pitch}, roll: {roll}".format(yaw=self.yaw, pitch=self.pitch, roll=self.roll))
+        print("Current position: roll:{roll}, pitch:{pitch}, yaw:{yaw}".format(roll=self.roll/math.pi*180.0, pitch=self.pitch/math.pi*180.0, yaw=self.yaw/math.pi*180.0))
 
     def reach_target_angle(self):
         checker = False
         tmp_target_roll = self.target_roll/180.0*math.pi
         tmp_target_pitch = self.target_pitch/180.0*math.pi
 
+        target_angle_threshold_rad = self.target_angle_threshold/180.0*math.pi
+
         print(self.roll, self.pitch)
         print(tmp_target_roll, tmp_target_pitch)
 
-        if abs(tmp_target_roll - self.roll) < self.target_angle_threshold and abs(tmp_target_pitch - self.pitch) < self.target_angle_threshold:
+        if abs(tmp_target_roll - self.roll) < target_angle_threshold_rad and abs(tmp_target_pitch - self.pitch) < target_angle_threshold_rad:
+            print("ReachTargetAngle")
+            print(tmp_target_roll, tmp_target_pitch)
+            print(self.roll, self.pitch)
             checker = True
         else:
             checker = False
@@ -183,20 +192,28 @@ class GimbalController(GimbalBase):
             if(abs(self.target_roll - tmp_current_roll) > self.angular_velocity_threshold or abs(self.target_pitch - tmp_current_pitch) > self.angular_velocity_threshold or abs(self.target_yaw - tmp_current_yaw) > self.angular_velocity_threshold):
                 correct_target_angle = True
                 self.target_yaw = 0.0
-                if self.print_status_checker:
-                    print("Target angle set")
-                    print("Target Angle: yaw: {yaw}, pitch: {pitch}, roll: {roll}".format(yaw=self.target_yaw, pitch=self.target_pitch, roll=self.target_roll))
+                
+                print("Target angle set")
+                print("Target Angle: roll: {roll}, pitch: {pitch}, yaw: {yaw}".format(yaw=self.target_yaw, pitch=self.target_pitch, roll=self.target_roll))
 
-    def set_attitude_control(self, in_yaw, in_roll, in_pitch):
+    def set_attitude_control(self):
         # yaw, roll, pitch in 0.1 steps (-1800,1800)
         # ctrl_byte always to 1
         # time_for_action to define speed in 0.1sec
-        yaw = int(in_yaw*10.0)
-        roll = int(in_roll*10.0)
-        pitch = int(in_pitch*10.0)
+        yaw = int(self.target_yaw*10)
+        roll = int(self.target_roll*10)
+        pitch = int(self.target_pitch*10)
 
+        success = False
+        if -1800 <= yaw <= 1800 and -1800 <= roll <= 1800 and -1800 <= pitch <= 1800:
+            success = self.setPosControl(yaw, roll, pitch)
+
+        print("Send Command Control: ", success)
+
+
+    def setPosControl(self, yaw, roll, pitch):
         ctrl_byte = 0x01
-        time_for_action = 0x14 # 2.0sec
+        time_for_action = 0x50 # 32sec
         hex_data = struct.pack('<3h2B', yaw, roll, pitch,
                                ctrl_byte, time_for_action)
 
@@ -207,22 +224,54 @@ class GimbalController(GimbalBase):
         cmd = self.assemble_can_msg(cmd_type='03', cmd_set='0E',
                                     cmd_id='00', data=cmd_data)
 
+
+        print(cmd)
+
+        self.send_cmd(cmd)
+        return True
+
+    def send_joint_speed_cmd(self, req):
+        # Angular speeds in 0.1 deg/sec
+        yaw = req.yaw * 10
+        pitch = req.pitch * 10
+        roll = req.roll * 10
+
+        success = False
+        if -3600 <= yaw <= 3600 and -3600 <= roll <= 3600 and -3600 <= pitch <= 3600:
+            success = self.setSpeedControl(yaw, roll, pitch)
+        return SendJointSpeedResponse(success)
+
+    def setSpeedControl(self, yaw, roll, pitch, ctrl_byte=0x80):
+        hex_data = struct.pack('<3hB', yaw, roll, pitch, ctrl_byte)
+        pack_data = ['{:02X}'.format(struct.unpack('<1B', i)[
+            0]) for i in hex_data]
+        cmd_data = ':'.join(pack_data)
+
+        cmd = self.assemble_can_msg(cmd_type='03', cmd_set='0E',
+                                    cmd_id='01', data=cmd_data)
+        # print('cmd---data {}'.format(cmd))
         self.send_cmd(cmd)
         return True
 
     def controller_spin(self):
         counter = 0
         while not rospy.is_shutdown():
+            if counter == 0:
+                rospy.sleep(2.0)
+            
             self.request_current_position()
+            self.rate.sleep() #ここでsleepしないと送信と受信を同時に行ってしまう
+
             if self.print_status_checker:
                 self.print_status()
             
             if self.reach_target_angle() or counter == 0:
+                print("Request New Target Angle")
                 self.request_target_position()
-                self.set_attitude_control(self.target_yaw, self.target_roll, self.target_pitch)
+            
+            self.set_attitude_control()
             
             counter += 1
-            self.rate.sleep()
 
 
 

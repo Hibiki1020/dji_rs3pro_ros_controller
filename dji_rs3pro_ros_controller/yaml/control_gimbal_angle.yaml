@@ -8,7 +8,7 @@ roll_min: -10.0
 pitch_max: 10.0
 pitch_min: -10.0
 yaw_max: 5.0
-yaw_min: -5.0
+yaw_min: 1.0
 
 angular_velocity_threshold: 4.0 # deg/sec
-target_angle_threshold: 0.2
+target_angle_threshold: 5.0

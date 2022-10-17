@@ -186,28 +186,6 @@ class GimbalBase(object):
         seq_str = "%04x" % self.seq
         return seq_str[2:] + ":" + seq_str[0:2]
 
-    def send_joint_pos(self, req):
-        # print("Returning [%s + %s +%s ]" % (req.pitch, req.yaw, req.roll))
-
-        yaw = 10 * req.yaw
-        roll = 10 * req.roll
-        pitch = 10 * req.pitch
-        success = False
-        if -1800 <= yaw <= 1800 and -1800 <= roll <= 1800 and -1800 <= pitch <= 1800:
-            success = self.setPosControl(yaw, roll, pitch)
-        return SendJointPosResponse(success)
-
-    def send_joint_speed_cmd(self, req):
-        # Angular speeds in 0.1 deg/sec
-        yaw = req.yaw * 10
-        pitch = req.pitch * 10
-        roll = req.roll * 10
-
-        success = False
-        if -3600 <= yaw <= 3600 and -3600 <= roll <= 3600 and -3600 <= pitch <= 3600:
-            success = self.setSpeedControl(yaw, roll, pitch)
-        return SendJointSpeedResponse(success)
-
     def set_hyperparams(self):
         # Set the gimbal hyperparameters
         print("set_hyperparams")
@@ -374,14 +352,9 @@ class GimbalBase(object):
         self.sub_can_data = rospy.Subscriber('received_messages', Frame, self.can_callback)
         self.pub_can_command = rospy.Publisher('sent_messages', Frame, queue_size=10)
 
-        self.service_set_angle = rospy.Service(
-            'send_joint_cmd', SendJointPos, self.send_joint_pos)
-        self.service_set_velocity = rospy.Service(
-            'send_joint_speed_cmd', SendJointSpeed, self.send_joint_speed_cmd)
-
         self.pub_eular_angle = rospy.Publisher('gimbal_angle', EularAngle, queue_size=10)
 
-        self.set_hyperparams()
+        ##self.set_hyperparams()
 
     def ros_spin(self):
 
