@@ -208,12 +208,14 @@ class GimbalBase(object):
         #pack_data = ['{:02X}'.format(struct.unpack('<1B', bytes(i))[0]) for i in hex_data]
 
         # Python3環境下ではこれを動かす
-        pack_data = ['{:02X}'.format(struct.unpack('<1B', b'i')[0]) for i in hex_data]
+        #pack_data = ['{:02X}'.format(struct.unpack('<1B', b'i')[0]) for i in hex_data]
+        pack_data = ['{:02X}'.format(struct.unpack('<1B', i.to_bytes(1, 'big'))[0]) for i in hex_data]
         cmd_data = ':'.join(pack_data)
         #print(cmd_data)
         cmd = self.assemble_can_msg(cmd_type='03', cmd_set='0E',
                                     cmd_id='03', data=cmd_data)
         
+        print(cmd)
         self.send_cmd(cmd)
         return True
 

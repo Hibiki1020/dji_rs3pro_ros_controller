@@ -6,6 +6,7 @@ import math
 import argparse
 import yaml
 import random
+import ctypes as ct
 
 import rospy
 import tf
@@ -153,6 +154,18 @@ class GimbalController(GimbalBase):
 
     def print_status(self):
         print("Current position: roll:{roll}, pitch:{pitch}, yaw:{yaw}".format(roll=self.roll/math.pi*180.0, pitch=self.pitch/math.pi*180.0, yaw=self.yaw/math.pi*180.0))
+        deg_roll = self.roll/math.pi*180.0
+        deg_pitch = self.pitch/math.pi*180.0
+        deg_yaw = self.yaw/math.pi*180.0
+
+        if deg_roll > self.roll_max or deg_roll < self.roll_min:
+            rospy.logerr("Roll angle is out of range by handcarring")
+
+        if deg_pitch > self.pitch_max or deg_pitch < self.pitch_min:
+            rospy.logerr("Pitch angle is out of range by handcarring")
+
+        if deg_yaw > self.yaw_max or deg_yaw < self.yaw_min:
+            rospy.logerr("Yaw angle is out of range by handcarring")
 
     def reach_target_angle(self):
         checker = False
@@ -204,6 +217,8 @@ class GimbalController(GimbalBase):
         roll = int(self.target_roll*10)
         pitch = int(self.target_pitch*10)
 
+        print(yaw)
+
         success = False
         if -1800 <= yaw <= 1800 and -1800 <= roll <= 1800 and -1800 <= pitch <= 1800:
             success = self.setPosControl(yaw, roll, pitch)
@@ -213,14 +228,14 @@ class GimbalController(GimbalBase):
 
     def setPosControl(self, yaw, roll, pitch):
         ctrl_byte = 0x01
-        time_for_action = 0x50 # 32sec
+        time_for_action = 0x14 # 2.0sec
         hex_data = struct.pack('<3h2B', yaw, roll, pitch,
                                ctrl_byte, time_for_action)
 
-        pack_data = ['{:02X}'.format(struct.unpack('<1B', b'i')[
-            0]) for i in hex_data]
+        #pack_data = ['{:02X}'.format(struct.unpack('<1B', b'i')[0]) for i in hex_data]
+        pack_data = ['{:02X}'.format(struct.unpack('<1B', i.to_bytes(1,'big'))[0]) for i in hex_data]
         cmd_data = ':'.join(pack_data)
-        # print(cmd_data)
+        print(cmd_data)
         cmd = self.assemble_can_msg(cmd_type='03', cmd_set='0E',
                                     cmd_id='00', data=cmd_data)
 

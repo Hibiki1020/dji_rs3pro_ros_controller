@@ -80,7 +80,7 @@ Launch the ROS-node using
 # Launch IMU
 roslaunch xsens_mti_driver xsens_mti_node.launch
 
-roslaunch dji_rs3pro_ros_controller ~~~.launch
+roslaunch dji_rs3pro_ros_controller control_gimbal_angle.launch
 ```
 
-Make sure to specify the correct CAN-bus in the launch file.
+Make sure to specify the correct CAN-bus in the launch file and check yaml file.
