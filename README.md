@@ -26,6 +26,7 @@ DJI RS3 Pro is used in this method, but you can use other DJI's gimbal such as R
 
 At a minimum, the following programs are required to run this program.
 * Gimbal
+* Smartphone(Android or iPhone) and install DJI's ronin app.
 * [DJI Focus Wheel](https://m.dji.com/jp/product/ronin-s-focus-wheel)
 * CAN-USB Converter
 * Home-made Cable
