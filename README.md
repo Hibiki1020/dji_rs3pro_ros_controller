@@ -2,6 +2,11 @@
 
 This program is based on the [ROS controller for DJI RS2](https://github.com/ceinem/dji_rs2_ros_controller) developed by ceinem and [DJI R SDK demo software](https://terra-1-g.djicdn.com/851d20f7b9f64838a34cd02351370894/DJI%20R%20SDK/SDK%20demo%20software.zip).
 
+## System Requirement
+* Ubuntu 20.04
+* Python3
+* ROS Noetic
+
 ## Install
 
 ### Setup ROS, catkin workspace and system dependencies
