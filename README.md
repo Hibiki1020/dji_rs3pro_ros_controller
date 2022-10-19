@@ -57,7 +57,7 @@ Download [software from xsens's site](https://www.xsens.com/software-downloads)
 cd Downloads/
 sudo apt-get install sharutils
 tar -xvf MT_Software_Suite_linux-x86_2021.4.tar.gz
-sudo ./mtsdk_linux-x64_2020.0.sh 
+sudo ./mtsdk_linux-x86_2021.4.sh 
 cp -r /usr/local/xsens/xsens_ros_mti_driver/ ~/catkin_ws/src/
 cd ~/catkin_ws
 pushd src/xsens_ros_mti_driver/lib/xspublic && make && popd
