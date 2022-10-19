@@ -43,6 +43,10 @@ class GimbalBase(object):
         self.pitch = 0.0
         self.yaw = 0.0
 
+        self.roll_max_limit = int(30)
+        self.pitch_max_limit = int(30)
+        self.yaw_max_limit = int(0)
+
     def parse_position_response(self, data_frame):
         pos_data = data_frame[16:-4]
         yaw = int(
@@ -188,15 +192,17 @@ class GimbalBase(object):
 
     def set_hyperparams(self):
         # Set the gimbal hyperparameters
-        print("set_hyperparams")
+        # print("set_hyperparams")
 
         return_code = int(str(0), base=10)
-        limit_pitch_max = int(str(30), base=10)
+        limit_pitch_max = int(str(self.pitch_max_limit), base=10)
         limit_pitch_min = int(str(0), base=10)
-        limit_yaw_max = int(str(0), base=10)
+        limit_yaw_max = int(str(self.yaw_max_limit), base=10)
         limit_yaw_min = int(str(0), base=10)
-        limit_roll_max = int(str(30), base=10)
+        limit_roll_max = int(str(self.pitch_max_limit), base=10)
         limit_roll_min = int(str(0), base=10)
+
+        print("set_hyperparams: limit_roll_max:{roll_max} limit_pitch_max:{pitch_max} limit_yaw_max:{yaw_max}".format(roll_max=self.roll_max_limit, pitch_max=self.pitch_max_limit, yaw_max=self.yaw_max_limit))
 
         #print("yaw: {yaw}, yaw_type: {yaw_type}".format(yaw=limit_yaw_max, yaw_type=type(limit_yaw_max)))
 
@@ -215,7 +221,7 @@ class GimbalBase(object):
         cmd = self.assemble_can_msg(cmd_type='03', cmd_set='0E',
                                     cmd_id='03', data=cmd_data)
         
-        print(cmd)
+        #print(cmd)
         self.send_cmd(cmd)
         return True
 

@@ -11,6 +11,8 @@
 </node>
 <node pkg="tf2_ros" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 1.5708 -1.5708 imu_link end_effector" />
 
+<node pkg="rqt_plot" type="rqt_plot" name="rqt_plot" args="/gimbal_angle/pitch /imu_angle/pitch" />
+
 
 
 </launch>
