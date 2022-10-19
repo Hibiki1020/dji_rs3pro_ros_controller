@@ -1,9 +1,3 @@
 [submodule "ros_canopen"]
 	path = ros_canopen
 	url = https://github.com/ros-industrial/ros_canopen.git
-[submodule "realsense_docker_kawai"]
-	path = realsense_docker_kawai
-	url = https://github.com/Hibiki1020/realsense_docker_kawai.git
-[submodule "xsense_docker_kawai"]
-	path = xsense_docker_kawai
-	url = https://github.com/Hibiki1020/xsense_docker_kawai.git
