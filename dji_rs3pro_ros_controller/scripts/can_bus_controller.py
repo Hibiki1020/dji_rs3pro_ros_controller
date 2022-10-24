@@ -360,7 +360,7 @@ class GimbalBase(object):
         self.sub_can_data = rospy.Subscriber('received_messages', Frame, self.can_callback)
         self.pub_can_command = rospy.Publisher('sent_messages', Frame, queue_size=10)
 
-        self.pub_eular_angle = rospy.Publisher('gimbal_angle', EularAngle, queue_size=10)
+        self.pub_eular_angle = rospy.Publisher('/gimbal_angle', EularAngle, queue_size=10)
 
         self.set_hyperparams()
 

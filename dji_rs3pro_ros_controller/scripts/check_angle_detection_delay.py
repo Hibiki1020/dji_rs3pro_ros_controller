@@ -113,8 +113,8 @@ class CheckAngleDetectionDelay(object):
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
         self.sub_imu_data = rospy.Subscriber("/imu/data", Imu, self.imu_data_callback)
-        self.sub_gimbal_angle = rospy.Subscriber("gimbal_angle", EularAngle, self.gimbal_angle_callback)
-        self.pub_imu_angle = rospy.Publisher("imu_angle", EularAngle, queue_size=1)
+        self.sub_gimbal_angle = rospy.Subscriber("/gimbal_angle", EularAngle, self.gimbal_angle_callback)
+        self.pub_imu_angle = rospy.Publisher("/imu/correct_angle", EularAngle, queue_size=1)
 
     def ros_spin(self):
         while not rospy.is_shutdown():

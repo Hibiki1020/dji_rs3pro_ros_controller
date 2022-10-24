@@ -83,10 +83,16 @@ Make sure to always specify the correct USB-port.
 
 Launch the ROS-node using
 ```
-# Launch IMU
-roslaunch xsens_mti_driver xsens_mti_node.launch
-
 roslaunch dji_rs3pro_ros_controller control_gimbal_angle.launch
 ```
 
+Launch the all equipment using
+```
+./control_gimbal_angle_w_imu_camera.sh
+```
+
+If you want to record bagdata, using
+```
+./record_bag_data.sh
+```
 Make sure to specify the correct CAN-bus in the launch file and check yaml file.

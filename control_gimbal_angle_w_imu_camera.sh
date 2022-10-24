@@ -1,0 +1,4 @@
+#!/bin/bash
+roslaunch xsens_mti_driver xsens_mti_node.launch
+roslaunch realsense2_camera rs_camera.launch
+roslaunch dji_rs3pro_ros_controller control_gimbal_angle.launch

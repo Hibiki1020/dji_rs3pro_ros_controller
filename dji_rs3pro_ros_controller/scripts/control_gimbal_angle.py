@@ -120,6 +120,8 @@ class GimbalController(GimbalBase):
         self.imu_angle.yaw = pitch
         #print("imu_angle:", self.imu_angle)
 
+        self.pub_imu_correct_angle.publish(self.imu_angle)
+
 
     def euler_from_quaternion(self, x, y, z, w):
         t0 = +2.0 * (w * x + y * z)
@@ -148,6 +150,8 @@ class GimbalController(GimbalBase):
         
         self.sub_imu_data = rospy.Subscriber("/imu/data", Imu, self.imu_data_callback)
         self.sub_img_data = rospy.Subscriber("/camera/image_raw", Image, self.img_data_callback)
+
+        self.pub_imu_correct_angle = rospy.Publisher("/imu/correct_angle", EularAngle, queue_size=1)
         
         #self.service_set_angle = rospy.Service('send_joint_cmd', SendJointPos, self.send_joint_pos)
         #self.service_set_velocity = rospy.Service('send_joint_speed_cmd', SendJointSpeed, self.send_joint_speed_cmd)
