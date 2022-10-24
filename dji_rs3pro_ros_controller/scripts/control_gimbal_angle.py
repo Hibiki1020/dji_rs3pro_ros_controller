@@ -82,6 +82,9 @@ class GimbalController(GimbalBase):
         self.yaw_max = float(CFG["yaw_max"])
         self.yaw_min = float(CFG["yaw_min"])
 
+        self.delta_time_min = int(CFG["delta_time_min"])
+        self.delta_time_max = int(CFG["delta_time_max"])
+
         self.angular_velocity_threshold = float(CFG["angular_velocity_threshold"])
         self.target_angle_threshold = float(CFG["target_angle_threshold"])
 
@@ -157,7 +160,7 @@ class GimbalController(GimbalBase):
         #self.service_set_velocity = rospy.Service('send_joint_speed_cmd', SendJointSpeed, self.send_joint_speed_cmd)
 
     def print_status(self):
-        print("Current position: roll:{roll}, pitch:{pitch}, yaw:{yaw}".format(roll=self.roll/math.pi*180.0, pitch=self.pitch/math.pi*180.0, yaw=self.yaw/math.pi*180.0))
+        print("Current position: roll:{:.3f}, pitch:{:.3f}, yaw:{:.3f}".format(self.roll/math.pi*180.0, self.pitch/math.pi*180.0, self.yaw/math.pi*180.0))
         deg_roll = self.roll/math.pi*180.0
         deg_pitch = self.pitch/math.pi*180.0
         deg_yaw = self.yaw/math.pi*180.0
@@ -178,13 +181,13 @@ class GimbalController(GimbalBase):
 
         target_angle_threshold_rad = self.target_angle_threshold/180.0*math.pi
 
-        print(self.roll, self.pitch)
-        print(tmp_target_roll, tmp_target_pitch)
+        #print(self.roll, self.pitch)
+        #print(tmp_target_roll, tmp_target_pitch)
 
         if abs(tmp_target_roll - self.roll) < target_angle_threshold_rad and abs(tmp_target_pitch - self.pitch) < target_angle_threshold_rad:
             print("ReachTargetAngle")
-            print(tmp_target_roll, tmp_target_pitch)
-            print(self.roll, self.pitch)
+            #print(tmp_target_roll, tmp_target_pitch)
+            #print(self.roll, self.pitch)
             checker = True
         else:
             checker = False
@@ -202,11 +205,13 @@ class GimbalController(GimbalBase):
             self.target_pitch = random.uniform(self.pitch_min, self.pitch_max)
             self.target_yaw = random.uniform(self.yaw_min, self.yaw_max)
 
+            self.target_delta = random.randint(self.delta_time_min, self.delta_time_max)
+
             tmp_current_roll = self.roll /math.pi * 180.0
             tmp_current_pitch = self.pitch /math.pi * 180.0
             tmp_current_yaw = self.yaw /math.pi * 180.0
 
-            if(abs(self.target_roll - tmp_current_roll) > self.angular_velocity_threshold or abs(self.target_pitch - tmp_current_pitch) > self.angular_velocity_threshold or abs(self.target_yaw - tmp_current_yaw) > self.angular_velocity_threshold):
+            if(abs(self.target_roll - tmp_current_roll)/float(self.target_delta) > self.angular_velocity_threshold or abs(self.target_pitch - tmp_current_pitch)/float(self.target_delta) > self.angular_velocity_threshold or abs(self.target_yaw - tmp_current_yaw) > self.angular_velocity_threshold):
                 correct_target_angle = True
                 self.target_yaw = 0.0
                 
@@ -232,7 +237,8 @@ class GimbalController(GimbalBase):
 
     def setPosControl(self, yaw, roll, pitch):
         ctrl_byte = 0x01
-        time_for_action = 0x14 # 2.0sec
+        #time_for_action = 0x14 # 2.0sec
+        time_for_action = int(str(self.target_delta), base=16)
         hex_data = struct.pack('<3h2B', yaw, roll, pitch,
                                ctrl_byte, time_for_action)
 
