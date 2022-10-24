@@ -12,7 +12,9 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     python3-venv \
     can-utils \
-    sharutils
+    sharutils \
+    iproute2 \
+    iputils-ping
 
 RUN apt install -y libmuparser-dev
 
