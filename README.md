@@ -86,9 +86,14 @@ Launch the ROS-node using
 roslaunch dji_rs3pro_ros_controller control_gimbal_angle.launch
 ```
 
-Launch the all equipment using
+Launch the all equipment using docker
 ```
 ./control_gimbal_angle_w_imu_camera.sh
+
+# In gimbal's docker
+slcand -o -s8 -t hw -S 1000000 /dev/ttyUSB0
+ip link set up slcan0
+roslaunch dji_rs3pro_ros_controller control_gimbal_angle.launch
 ```
 
 If you want to record bagdata, using
