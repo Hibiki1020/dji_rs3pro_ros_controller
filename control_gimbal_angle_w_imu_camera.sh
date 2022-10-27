@@ -1,8 +1,11 @@
 #!/bin/bash
-gnome-terminal --tab -e "bash -c 'roslaunch xsens_mti_driver xsens_mti_node.launch'"
-sleep 2s
+script_dir=$(cd $(dirname $0); pwd)
 
-gnome-terminal --tab -e "bash -c 'roslaunch realsense2_camera rs_camera.launch'"
-sleep 2s
 
-gnome-terminal --tab -e "bash -c 'roslaunch dji_rs3pro_ros_controller control_gimbal_angle.launch'"
+gnome-terminal --tab -e "bash -c '$script_dir/docker_run_realsense.sh'"
+sleep 5s
+
+gnome-terminal --tab -e "bash -c '$script_dir/docker_run_imu.sh'"
+sleep 5s
+
+gnome-terminal --tab -e "bash -c '$script_dir/docker_run_gimbal.sh'"
