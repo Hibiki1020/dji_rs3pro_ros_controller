@@ -340,7 +340,7 @@ class GimbalBase(object):
         # print("Cmd_data" + cmd)
         self.send_cmd(cmd)
 
-    def print_current_position(self):
+    def publish_current_position(self):
         #print("Current position: yaw: {yaw}, pitch: {pitch}, roll: {roll}".format(yaw=self.yaw, pitch=self.pitch, roll=self.roll))
         pub_angle = EularAngle()
         pub_angle.header.stamp = rospy.Time.now()
@@ -369,7 +369,7 @@ class GimbalBase(object):
         while not rospy.is_shutdown():
             #print("ROS spin")
             self.request_current_position()
-            self.print_current_position()
+            self.publish_current_position()
             self.rate.sleep()
         
 

@@ -285,6 +285,7 @@ class GimbalController(GimbalBase):
                 rospy.sleep(2.0)
             
             self.request_current_position()
+            self.publish_current_position()
             self.rate.sleep() #ここでsleepしないと送信と受信を同時に行ってしまう
 
             if self.print_status_checker:
