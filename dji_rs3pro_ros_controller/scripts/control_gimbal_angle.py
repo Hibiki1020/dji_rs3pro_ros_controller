@@ -109,7 +109,7 @@ class GimbalController(GimbalBase):
         pose_stamped.pose.orientation = self.imu_data.orientation
         
         try:
-            self.trans = self.tfBuffer.lookup_transform('imu_link', 'end_effector', rospy.Time())
+            self.trans = self.tfBuffer.lookup_transform('imu_link', 'gimbal_base', rospy.Time())
             #print(type(self.trans))
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             self.rate.sleep()
