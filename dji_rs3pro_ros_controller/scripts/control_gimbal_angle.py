@@ -118,9 +118,12 @@ class GimbalController(GimbalBase):
         #print(pose_trans)
 
         roll, pitch, yaw = self.euler_from_quaternion(pose_trans.pose.orientation.x, pose_trans.pose.orientation.y, pose_trans.pose.orientation.z, pose_trans.pose.orientation.w)
-        self.imu_angle.roll = yaw + math.pi
-        self.imu_angle.pitch = -1.0* roll
-        self.imu_angle.yaw = pitch
+        #self.imu_angle.roll = (yaw + math.pi)/180.0*math.pi
+        #self.imu_angle.pitch = (-1.0* roll)/180.0*math.pi
+        #self.imu_angle.yaw = pitch/180.0*math.pi
+        self.imu_angle.roll = roll
+        self.imu_angle.pitch = pitch
+        self.imu_angle.yaw = yaw
         #print("imu_angle:", self.imu_angle)
 
         self.pub_imu_correct_angle.publish(self.imu_angle)
@@ -129,16 +132,16 @@ class GimbalController(GimbalBase):
     def euler_from_quaternion(self, x, y, z, w):
         t0 = +2.0 * (w * x + y * z)
         t1 = +1.0 - 2.0 * (x * x + y * y)
-        roll_x = math.atan2(t0, t1)/math.pi*180.0
+        roll_x = math.atan2(t0, t1)
      
         t2 = +2.0 * (w * y - z * x)
         t2 = +1.0 if t2 > +1.0 else t2
         t2 = -1.0 if t2 < -1.0 else t2
-        pitch_y = math.asin(t2)/math.pi*180.0
+        pitch_y = math.asin(t2)
      
         t3 = +2.0 * (w * z + x * y)
         t4 = +1.0 - 2.0 * (y * y + z * z)
-        yaw_z = math.atan2(t3, t4)/math.pi*180.0
+        yaw_z = math.atan2(t3, t4)
      
         return roll_x, pitch_y, yaw_z
 
@@ -154,7 +157,7 @@ class GimbalController(GimbalBase):
         self.sub_imu_data = rospy.Subscriber("/imu/data", Imu, self.imu_data_callback)
         self.sub_img_data = rospy.Subscriber("/camera/image_raw", Image, self.img_data_callback)
 
-        self.pub_imu_correct_angle = rospy.Publisher("/imu/correct_angle", EularAngle, queue_size=1)
+        self.pub_imu_correct_angle = rospy.Publisher("/imu_correct_angle", EularAngle, queue_size=1)
         
         #self.service_set_angle = rospy.Service('send_joint_cmd', SendJointPos, self.send_joint_pos)
         #self.service_set_velocity = rospy.Service('send_joint_speed_cmd', SendJointSpeed, self.send_joint_speed_cmd)
