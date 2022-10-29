@@ -342,13 +342,13 @@ class GimbalBase(object):
 
     def publish_current_position(self):
         #print("Current position: yaw: {yaw}, pitch: {pitch}, roll: {roll}".format(yaw=self.yaw, pitch=self.pitch, roll=self.roll))
-        pub_angle = EularAngle()
-        pub_angle.header.stamp = rospy.Time.now()
-        pub_angle.header.frame_id = "end_effector"
-        pub_angle.yaw = self.yaw
-        pub_angle.pitch = self.pitch
-        pub_angle.roll = self.roll
-        self.pub_eular_angle.publish(pub_angle)
+        self.pub_angle = EularAngle()
+        self.pub_angle.header.stamp = rospy.Time.now()
+        self.pub_angle.header.frame_id = "end_effector"
+        self.pub_angle.yaw = self.yaw
+        self.pub_angle.pitch = self.pitch
+        self.pub_angle.roll = self.roll
+        self.pub_eular_angle.publish(self.pub_angle)
 
     def ros_init(self):
         rospy.init_node('RS3Pro_Gimbal_Base', anonymous=True)

@@ -117,33 +117,16 @@ class GimbalController(GimbalBase):
         pose_trans = tf2_geometry_msgs.do_transform_pose(pose_stamped, self.trans)
         #print(pose_trans)
 
-        roll, pitch, yaw = self.euler_from_quaternion(pose_trans.pose.orientation.x, pose_trans.pose.orientation.y, pose_trans.pose.orientation.z, pose_trans.pose.orientation.w)
-        #self.imu_angle.roll = (yaw + math.pi)/180.0*math.pi
-        #self.imu_angle.pitch = (-1.0* roll)/180.0*math.pi
-        #self.imu_angle.yaw = pitch/180.0*math.pi
-        self.imu_angle.roll = roll
-        self.imu_angle.pitch = pitch
-        self.imu_angle.yaw = yaw
+        eular = tf.transformations.euler_from_quaternion((pose_trans.pose.orientation.x, pose_trans.pose.orientation.y, pose_trans.pose.orientation.z, pose_trans.pose.orientation.w))
+        # self.imu_angle.roll = (yaw)
+        # self.imu_angle.pitch = (-1.0* roll)
+        # self.imu_angle.yaw = pitch
+        self.imu_angle.roll = eular[0]
+        self.imu_angle.pitch = eular[1]
+        self.imu_angle.yaw = eular[2]
         #print("imu_angle:", self.imu_angle)
 
         self.pub_imu_correct_angle.publish(self.imu_angle)
-
-
-    def euler_from_quaternion(self, x, y, z, w):
-        t0 = +2.0 * (w * x + y * z)
-        t1 = +1.0 - 2.0 * (x * x + y * y)
-        roll_x = math.atan2(t0, t1)
-     
-        t2 = +2.0 * (w * y - z * x)
-        t2 = +1.0 if t2 > +1.0 else t2
-        t2 = -1.0 if t2 < -1.0 else t2
-        pitch_y = math.asin(t2)
-     
-        t3 = +2.0 * (w * z + x * y)
-        t4 = +1.0 - 2.0 * (y * y + z * z)
-        yaw_z = math.atan2(t3, t4)
-     
-        return roll_x, pitch_y, yaw_z
 
 
     def ros_init_controller(self):
@@ -298,6 +281,9 @@ class GimbalController(GimbalBase):
                 print("Request New Target Angle")
                 self.request_target_position()
                 self.set_attitude_control()
+
+            print("gimbal_angle roll: {:4f}, pitch: {:4f}, yaw: {:4f}".format(self.pub_angle.roll, self.pub_angle.pitch, self.pub_angle.yaw))
+            print("imu_angle roll   : {:4f}, pitch: {:4f}, yaw: {:4f}".format(self.imu_angle.roll, self.imu_angle.pitch, self.imu_angle.yaw))
             
             counter += 1
 

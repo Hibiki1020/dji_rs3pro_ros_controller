@@ -4,5 +4,5 @@
   <node pkg="socketcan_bridge" name="socketcan_bridge" type="socketcan_bridge_node" output="screen">
     <param name="can_device" value="slcan0" />
   </node>
-  <node pkg="tf2_ros" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 1.5708 -1.5708 imu_link end_effector" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 -1.5708 1.5708 0 imu_link end_effector" />
 </launch>
