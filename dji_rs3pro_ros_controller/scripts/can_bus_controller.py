@@ -347,7 +347,7 @@ class GimbalBase(object):
         self.pub_angle.header.frame_id = "end_effector"
         self.pub_angle.yaw = self.yaw
         self.pub_angle.pitch = self.pitch
-        self.pub_angle.roll = self.roll
+        self.pub_angle.roll = self.roll #* -1.0 #AirSimの座標軸に合わせるため
         self.pub_eular_angle.publish(self.pub_angle)
 
     def ros_init(self):

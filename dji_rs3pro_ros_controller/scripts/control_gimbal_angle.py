@@ -103,24 +103,10 @@ class GimbalController(GimbalBase):
     def imu_data_callback(self, msg):
         self.imu_data = msg
         self.imu_data.header.frame_id = "imu_link"
-
-        # pose_stamped = tf2_geometry_msgs.PoseStamped()
-        # pose_stamped.header = self.imu_data.header
-        # pose_stamped.pose.orientation = self.imu_data.orientation
         
-        # try:
-        #     self.trans = self.tfBuffer.lookup_transform('imu_link', 'gimbal_base', rospy.Time())
-        #     #print(type(self.trans))
-        # except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-        #     self.rate.sleep()
-
-        # pose_trans = tf2_geometry_msgs.do_transform_pose(pose_stamped, self.trans)
-        # #print(pose_trans)
-
-        # eular = tf.transformations.euler_from_quaternion((pose_trans.pose.orientation.x, pose_trans.pose.orientation.y, pose_trans.pose.orientation.z, pose_trans.pose.orientation.w))
         eular = tf.transformations.euler_from_quaternion((self.imu_data.orientation.x, self.imu_data.orientation.y, self.imu_data.orientation.z, self.imu_data.orientation.w))
 
-        self.imu_angle.roll = eular[1] * -1.0
+        self.imu_angle.roll = eular[1] * -1.0 #* (-1.0) #AirSimの座標軸に合わせるため
         self.imu_angle.pitch = (eular[0] + math.pi/2) * -1.0
         self.imu_angle.yaw = eular[2]
 
