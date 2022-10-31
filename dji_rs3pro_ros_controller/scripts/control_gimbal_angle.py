@@ -118,13 +118,11 @@ class GimbalController(GimbalBase):
         #print(pose_trans)
 
         eular = tf.transformations.euler_from_quaternion((pose_trans.pose.orientation.x, pose_trans.pose.orientation.y, pose_trans.pose.orientation.z, pose_trans.pose.orientation.w))
-        # self.imu_angle.roll = (yaw)
-        # self.imu_angle.pitch = (-1.0* roll)
-        # self.imu_angle.yaw = pitch
-        self.imu_angle.roll = eular[0]
-        self.imu_angle.pitch = eular[1]
+        eular = tf.transformations.euler_from_quaternion((self.imu_data.orientation.x, self.imu_data.orientation.y, self.imu_data.orientation.z, self.imu_data.orientation.w))
+
+        self.imu_angle.roll = eular[1] * -1.0
+        self.imu_angle.pitch = (eular[0] + math.pi/2) * -1.0
         self.imu_angle.yaw = eular[2]
-        #print("imu_angle:", self.imu_angle)
 
         self.pub_imu_correct_angle.publish(self.imu_angle)
 
@@ -282,8 +280,9 @@ class GimbalController(GimbalBase):
                 self.request_target_position()
                 self.set_attitude_control()
 
-            print("gimbal_angle roll: {:4f}, pitch: {:4f}, yaw: {:4f}".format(self.pub_angle.roll, self.pub_angle.pitch, self.pub_angle.yaw))
-            print("imu_angle roll   : {:4f}, pitch: {:4f}, yaw: {:4f}".format(self.imu_angle.roll, self.imu_angle.pitch, self.imu_angle.yaw))
+            # print("gimbal_angle roll: {:4f}, pitch: {:4f}, yaw: {:4f}".format(self.pub_angle.roll, self.pub_angle.pitch, self.pub_angle.yaw))
+            # print("imu_angle roll   : {:4f}, pitch: {:4f}, yaw: {:4f}".format(self.imu_angle.roll, self.imu_angle.pitch, self.imu_angle.yaw))
+            # print("\n")
             
             counter += 1
 

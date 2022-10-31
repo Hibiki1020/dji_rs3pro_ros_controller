@@ -7,11 +7,11 @@ roll_max: 30.0
 roll_min: -30.0
 pitch_max: 30.0
 pitch_min: -30.0
-yaw_max: 7.0
-yaw_min: -7.0
+yaw_max: 4.0
+yaw_min: -4.0
 
 delta_time_min: 20
 delta_time_max: 25
 
-angular_velocity_threshold: 5.0 # deg/sec
+angular_velocity_threshold: 3.0 # deg/sec
 target_angle_threshold: 5.0
