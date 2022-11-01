@@ -5,8 +5,6 @@ bag_name="dji_rs3pro_"$jst_ymd_today
 
 rosbag record /camera/color/camera_info \
             /camera/color/image_raw/compressed \
-            /camera/depth/camera_info \
-            /camera/depth/image_rect_raw/compressed \
             /imu/acceleration \
             /imu/angular_velocity \
             /imu/data \
