@@ -22,7 +22,7 @@ rosbag record /camera/color/camera_info \
             /temperature \
             /tf \
             /tf_static \
-            /imu/correct_angle \
+            /imu_correct_angle \
             /gimbal_angle \
             received_message \
             -O /home/amsl/bagfiles/$bag_name.bag
