@@ -1,0 +1,7 @@
+save_data_directory: /media/amsl/96fde31e-3b9b-4160-8d8a-a4b913579ca21/gimbal_attitude_image/dji_rs3pro_20221101_132306/
+csv_name: "data_list.csv"
+
+gimbal_eular_angle_topic_name: "/gimbal_angle"
+imu_eular_angle_topic_name: "/imu_correct_angle"
+decompressed_image_topic_name: "/decompressed_image"
+imu_data_topic_name: "/imu_data"

@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="dji_rs3pro_ros_controller" name="rosbag2dataset" type="rosbag2dataset.py" output="screen">
+    </node>
+    <node name="image_republish" pkg="image_transport" type="republish" args="compressed raw">
+        <remap from="in" to="/camera/color/image_raw" />
+        <remap from="out" to="/decompressed_image" />
+    </node>
+</launch>
