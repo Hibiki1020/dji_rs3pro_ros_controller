@@ -110,7 +110,7 @@ class GimbalController(GimbalBase):
         self.imu_angle.pitch = (eular[0] + math.pi/2) * -1.0
         self.imu_angle.yaw = eular[2]
 
-        self.pub_imu_correct_angle.publish(self.imu_angle)
+        #self.pub_imu_correct_angle.publish(self.imu_angle)
 
 
     def ros_init_controller(self):
@@ -269,6 +269,8 @@ class GimbalController(GimbalBase):
             # print("gimbal_angle roll: {:4f}, pitch: {:4f}, yaw: {:4f}".format(self.pub_angle.roll, self.pub_angle.pitch, self.pub_angle.yaw))
             # print("imu_angle roll   : {:4f}, pitch: {:4f}, yaw: {:4f}".format(self.imu_angle.roll, self.imu_angle.pitch, self.imu_angle.yaw))
             # print("\n")
+
+            self.pub_imu_correct_angle.publish(self.imu_angle)
             
             counter += 1
 
