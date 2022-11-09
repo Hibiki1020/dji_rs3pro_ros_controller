@@ -146,7 +146,7 @@ class ROSBag2Dataset:
         # Save Image
         image_name = "image" + str(self.counter) + ".png"
         image_path = self.save_data_directory + "/camera_image/" + image_name
-        cv2.imwrite(image_path, self.color_img_cv)
+        cv2.imwrite(image_path, self.cropped_image)
 
         # Save CSV
         csv_file_path = os.path.join(self.save_data_directory, self.csv_name)
