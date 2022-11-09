@@ -181,12 +181,15 @@ class GimbalController(GimbalBase):
             tmp_current_pitch = self.pitch /math.pi * 180.0
             tmp_current_yaw = self.yaw /math.pi * 180.0
 
-            if(abs(self.target_roll - tmp_current_roll)/float(self.target_delta) > self.angular_velocity_threshold or abs(self.target_pitch - tmp_current_pitch)/float(self.target_delta) > self.angular_velocity_threshold or abs(self.target_yaw - tmp_current_yaw) > self.angular_velocity_threshold):
+            if(abs(self.target_roll - tmp_current_roll)/float(self.target_delta) < self.angular_velocity_threshold or abs(self.target_pitch - tmp_current_pitch)/float(self.target_delta) < self.angular_velocity_threshold or abs(self.target_yaw - tmp_current_yaw) > self.angular_velocity_threshold):
                 correct_target_angle = True
                 self.target_yaw = 0.0
                 
                 print("Target angle set")
                 print("Target Angle: roll: {roll}, pitch: {pitch}, yaw: {yaw}".format(yaw=self.target_yaw, pitch=self.target_pitch, roll=self.target_roll))
+            else:
+                rospy.logwarn("Target angle set failed. Search new target angle")
+
 
     def set_attitude_control(self):
         # yaw, roll, pitch in 0.1 steps (-1800,1800)
