@@ -13,5 +13,5 @@ yaw_min: -4.0
 delta_time_min: 20
 delta_time_max: 25
 
-angular_velocity_threshold: 4.0 # deg/sec
+angular_velocity_threshold: 3.0 # deg/sec
 target_angle_threshold: 5.0
