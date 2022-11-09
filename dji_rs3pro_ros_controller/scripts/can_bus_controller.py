@@ -45,7 +45,7 @@ class GimbalBase(object):
 
         self.roll_max_limit = int(30)
         self.pitch_max_limit = int(30)
-        self.yaw_max_limit = int(0)
+        self.yaw_max_limit = int(5)
 
     def parse_position_response(self, data_frame):
         pos_data = data_frame[16:-4]
