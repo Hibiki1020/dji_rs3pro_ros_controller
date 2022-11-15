@@ -2,10 +2,10 @@
 script_dir=$(cd $(dirname $0); pwd)
 
 
-gnome-terminal --tab -e "bash -c '$script_dir/shell_scripts/docker_run_realsense.sh'"
+gnome-terminal --tab -e "bash -c '$script_dir/docker_run_realsense.sh'"
 sleep 5s
 
-gnome-terminal --tab -e "bash -c '$script_dir/shell_scripts/docker_run_imu.sh'"
+gnome-terminal --tab -e "bash -c '$script_dir/docker_run_imu.sh'"
 sleep 5s
 
-gnome-terminal --tab -e "bash -c '$script_dir/shell_scripts/docker_run_gimbal.sh'"
+gnome-terminal --tab -e "bash -c '$script_dir/docker_run_gimbal.sh'"
