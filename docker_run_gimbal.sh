@@ -19,4 +19,6 @@ docker run -it --rm \
     --device=/dev/ttyUSB3:/dev/ttyUSB3 \
     --device=/dev/ttyUSB4:/dev/ttyUSB4 \
     $image_name:$image_tag \
-    bash -c "catkin_make && bash"
+    bash -c "catkin_make && slcand -o -s8 -t hw -S 1000000 /dev/ttyUSB0 && ip link set up slcan0 && bash"
+
+    

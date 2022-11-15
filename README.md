@@ -6,6 +6,16 @@ This program is based on the [ROS controller for DJI RS2](https://github.com/cei
 * Ubuntu 20.04
 * Python3
 * ROS Noetic
+* gnome-terminal
+* Docker
+
+## Hardware Requirement
+* DJI RS3 Pro
+* DJI Focus Wheel
+* Camera (weight 700g or more)
+* Cable
+* CAN-USB Converter
+* PC
 
 ## Install
 
@@ -67,11 +77,19 @@ catkin build (or catkin_make)
 ### Camera
 I used a Realsense D435 as my camera. I also used aluminum weights for IMU mounting and to ensure weight balance.
 
+If you want to run realsense with this software, you will need the following packages
+* librealsense2-dkms
+* librealsense2-utils
+* librealsense2-dev
+* librealsense2-dbg
+* ros-noetic-realsense2-camera
+
 **note**: When a light object such as a webcam is mounted on a gimbal, excessive torque or angular velocity may be applied to the gimbal, possibly damaging the main unit. Therefore, it is advisable to create a balance weight or the like to secure a certain amount of weight. In my case, I use an aluminum weight weighing about 700 grams.
 
 ## Run
 For the CANusb bring up the can interface using. 
 
+**When inserting the gimbal USB, insert it before the IMU or camera USB**.
 If the IMU or camera USB is inserted first, the USB number may be USB1 or USB2.:
 ```bash
 sudo slcand -o -s8 -t hw -S 1000000 /dev/ttyUSB0
@@ -91,8 +109,6 @@ Launch the all equipment using docker
 ./control_gimbal_angle_w_imu_camera.sh
 
 # In gimbal's docker
-slcand -o -s8 -t hw -S 1000000 /dev/ttyUSB0
-ip link set up slcan0
 roslaunch dji_rs3pro_ros_controller control_gimbal_angle.launch
 ```
 

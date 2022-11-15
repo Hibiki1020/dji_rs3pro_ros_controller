@@ -1,4 +1,4 @@
-save_data_directory: /media/amsl/96fde31e-3b9b-4160-8d8a-a4b913579ca21/gimbal_attitude_image/dji_rs3pro_20221109_161232/
+save_data_directory: /media/amsl/96fde31e-3b9b-4160-8d8a-a4b913579ca21/gimbal_attitude_image/dji_rs3pro_20221114_163059/
 csv_name: "data_list.csv"
 
 gimbal_eular_angle_topic_name: "/gimbal_angle"

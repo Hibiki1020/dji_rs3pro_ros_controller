@@ -72,8 +72,6 @@ class GimbalController(GimbalBase):
         # self.yaw = yaw
 
         self.CFG = CFG
-        self.record_data = bool(CFG["record_data"])
-        self.record_data_path = str(CFG["record_data_path"])
         self.print_status_checker = bool(CFG["print_status"])
         self.roll_max = float(CFG["roll_max"])
         self.roll_min = float(CFG["roll_min"])
