@@ -77,13 +77,6 @@ catkin build (or catkin_make)
 ### Camera
 I used a Realsense D435 as my camera. I also used aluminum weights for IMU mounting and to ensure weight balance.
 
-If you want to run realsense with this software, you will need the following packages
-* librealsense2-dkms
-* librealsense2-utils
-* librealsense2-dev
-* librealsense2-dbg
-* ros-noetic-realsense2-camera
-
 **note**: When a light object such as a webcam is mounted on a gimbal, excessive torque or angular velocity may be applied to the gimbal, possibly damaging the main unit. Therefore, it is advisable to create a balance weight or the like to secure a certain amount of weight. In my case, I use an aluminum weight weighing about 700 grams.
 
 ## Run
