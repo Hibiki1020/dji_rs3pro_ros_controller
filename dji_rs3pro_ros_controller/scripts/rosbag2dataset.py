@@ -69,7 +69,7 @@ class ROSBag2Dataset:
 
     def init_node(self):
         rospy.init_node('rosbag2dataset', anonymous=True)
-        self.rate = rospy.Rate(25) # 25hz
+        self.rate = rospy.Rate(100) # 100hz
         self.init_time = rospy.Time().now()
 
         self.sub_imu_data = rospy.Subscriber(self.imu_data_topic_name, Imu, self.imu_data_callback)
