@@ -7,6 +7,11 @@ pitch_min: -30.0
 yaw_max: 3.0
 yaw_min: -3.0
 
+control_params:
+  distribution_type: "normal" # "normal" or "uniform"
+  normal_mean: 0.0
+  normal_std: 8.0
+
 delta_time_min: 18
 delta_time_max: 28
 

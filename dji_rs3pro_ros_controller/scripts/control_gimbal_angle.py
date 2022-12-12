@@ -80,6 +80,10 @@ class GimbalController(GimbalBase):
         self.yaw_max = float(CFG["yaw_max"])
         self.yaw_min = float(CFG["yaw_min"])
 
+        self.distribution_type = str(CFG["control_params"]["distribution_type"])
+        self.normal_mean = float(CFG["control_params"]["normal_mean"])
+        self.normal_std = float(CFG["control_params"]["normal_std"])
+
         self.delta_time_min = int(CFG["delta_time_min"])
         self.delta_time_max = int(CFG["delta_time_max"])
 
@@ -162,16 +166,30 @@ class GimbalController(GimbalBase):
 
         return checker
 
+    def check_limit(self, angle, min_angle, max_angle):
+        result_angle = angle
+
+        if angle > max_angle:
+            result_angle = max_angle
+        elif angle < min_angle:
+            result_angle = min_angle
+        
+        return result_angle
+
     def request_target_position(self):
         print("Set New Target Angle")
 
         correct_target_angle = False
 
         while correct_target_angle==False:
-
-            self.target_roll = random.uniform(self.roll_min, self.roll_max)
-            self.target_pitch = random.uniform(self.pitch_min, self.pitch_max)
-            self.target_yaw = random.uniform(self.yaw_min, self.yaw_max)
+            if self.distribution_type == "uniform":
+                self.target_roll = random.uniform(self.roll_min, self.roll_max)
+                self.target_pitch = random.uniform(self.pitch_min, self.pitch_max)
+                self.target_yaw = random.uniform(self.yaw_min, self.yaw_max)
+            elif self.distribution_type == "normal":
+                self.target_roll = self.check_limit(random.gauss(self.normal_mean, self.normal_std), self.roll_min, self.roll_max)
+                self.target_pitch = self.check_limit(random.gauss(self.normal_mean, self.normal_std), self.pitch_min, self.pitch_max)
+                self.target_yaw = self.check_limit(random.gauss(self.normal_mean, 1.0), self.yaw_min, self.yaw_max)
 
             self.target_delta = random.randint(self.delta_time_min, self.delta_time_max)
 
