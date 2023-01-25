@@ -1,14 +1,14 @@
 print_status: True
 
-roll_max: 20.0
-roll_min: -20.0
-pitch_max: 20.0
-pitch_min: -20.0
+roll_max: 30.0
+roll_min: -30.0
+pitch_max: 30.0
+pitch_min: -30.0
 yaw_max: 3.0
 yaw_min: -3.0
 
 control_params:
-  distribution_type: "normal" # "normal" or "uniform"
+  distribution_type: "uniform" # "normal" or "uniform"
   normal_mean: 0.0
   normal_std: 6.0
 

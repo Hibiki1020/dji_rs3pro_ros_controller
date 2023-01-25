@@ -47,6 +47,7 @@ class ROSBag2Dataset:
         self.imu_eular_angle_topic_name = str(CFG["imu_eular_angle_topic_name"])
         self.decompressed_image_topic_name = str(CFG["decompressed_image_topic_name"])
         self.imu_data_topic_name = str(CFG["imu_data_topic_name"])
+        self.ros_rate = int(CFG["ros_rate"])
 
         self.counter = 0
         self.save_data_checker_gimbal = False
@@ -69,7 +70,7 @@ class ROSBag2Dataset:
 
     def init_node(self):
         rospy.init_node('rosbag2dataset', anonymous=True)
-        self.rate = rospy.Rate(100) # 100hz
+        self.rate = rospy.Rate(self.ros_rate)
         self.init_time = rospy.Time().now()
 
         self.sub_imu_data = rospy.Subscriber(self.imu_data_topic_name, Imu, self.imu_data_callback)
