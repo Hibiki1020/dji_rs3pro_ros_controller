@@ -14,7 +14,7 @@ control_params:
   normal_std: 6.0
 
 delta_time_min: 8
-delta_time_max: 20
+delta_time_max: 15
 
-angular_velocity_threshold: 6.0 # deg/sec
+angular_velocity_threshold: 4.0 # deg/sec
 target_angle_threshold: 2.5
